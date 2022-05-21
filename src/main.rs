@@ -10,8 +10,8 @@ use std::fs::File;
 use std::io::Error;
 use std::io::BufWriter;
 
-const WIDTH: usize = 640;
-const HEIGHT: usize = 480;
+const WIDTH: usize = 1235;
+const HEIGHT: usize = 1120;
 
 // Actual constants
 const MIN_X: f64 = -2.0;
@@ -23,6 +23,8 @@ const Y_DIST: f64 = MAX_Y - MIN_Y;
 const MAX_ITERATIONS: u32 = 1000;
 const COLOR_DEPTH: u8 = 255;
 const INTENSITY_SCALE: f32 = COLOR_DEPTH as f32 / MAX_ITERATIONS as f32;
+
+
 
 fn main() {
     // Create a grid over the complex plane between (-2.00, 0.47) on x and (-1.12, 1.12) on y
@@ -40,13 +42,17 @@ fn main() {
         y := 0.0
         iteration := 0
         max_iteration := 1000
+        x2 := 0
+        y2 := 0
+        w := 0
 
-        while (x*x + y*y ≤ 2*2 AND iteration < max_iteration) do
-            xtemp := x*x - y*y + x0
-            y := 2*x*y + y0
-            x := xtemp
+        while (x2 + y2 ≤ 4 and iteration < max_iteration) do
+            x := x2 - y2 + x0
+            y := w - x2 - y2 + y0
+            x2 := x × x
+            y2 := y × y
+            w := (x + y) × (x + y)
             iteration := iteration + 1
-    
         color := palette[iteration]
         plot(Px, Py, color)
     */
@@ -56,12 +62,16 @@ fn main() {
         for py in 0 .. HEIGHT {
             let (x0, y0) = scale(px, py);
             let (mut x, mut y) = (0.0, 0.0);
+            let (mut x2, mut y2) = (0.0, 0.0);
+            let mut w = 0.0;
             let mut iteration = 0;
             // let (mut x2, mut y2, mut w) = (0.0, 0.0, 0.0);
             while x * x + y * y <= 4.0 && iteration < MAX_ITERATIONS {
-                let xtemp = x*x - y*y + x0;
-                y = 2.0 * x * y + y0;
-                x = xtemp;
+                x = x2 - y2 + x0;
+                y = w - x2 - y2 + y0;
+                x2 = x * x;
+                y2 = y * y;
+                w = (x + y) * (x + y);
                 iteration += 1;
             }
             // if we actually scale these over 1000 instead we don't get good looking output
