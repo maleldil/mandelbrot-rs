@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 png = "0.17.5"
-approx = { version = "0.5.1", optional = true }
+approx = "0.5.1"
 
 [dev-dependencies]
-approx = { version = "0.5.1"}
+approx ="0.5.1"

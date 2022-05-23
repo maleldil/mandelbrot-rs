@@ -1,14 +1,10 @@
 #![allow(dead_code)]
 mod test;
+mod image;
+use image::Image;
 
-#[cfg(test)]
-#[macro_use]
+#[cfg_attr(test, macro_use)]
 extern crate approx;
-
-use png::{Encoder};
-use std::fs::File;
-use std::io::Error;
-use std::io::BufWriter;
 
 const WIDTH: usize = 1235;
 const HEIGHT: usize = 1120;
@@ -76,8 +72,8 @@ fn main() {
             pixels[(py * WIDTH) + px] = color;
         }
     }
-
-    draw_image(pixels).unwrap();
+    let image = Image::new("output.png".to_string(), WIDTH, HEIGHT);
+    image.draw_image(&pixels).unwrap();
     println!("File written to output.png");
 }
 
@@ -91,15 +87,3 @@ fn scale(x: usize, y: usize) -> (f64, f64) {
     let dy = (y as f64 * Y_DIST / (HEIGHT - 1) as f64) + MIN_Y;
     (dx, dy)
 }
-
-fn draw_image(pixels: [u8; WIDTH *HEIGHT]) -> Result<(), Error> {
-    let file_buffer = File::create("output.png")?;
-    let buffered_writer = BufWriter::with_capacity(WIDTH * HEIGHT, file_buffer);
-    let mut encoder = Encoder::new(buffered_writer, WIDTH as u32, HEIGHT as u32);
-    encoder.set_color(png::ColorType::Grayscale);
-    encoder.set_depth(png::BitDepth::Eight);
-    let mut writer = encoder.write_header().unwrap();
-    writer.write_image_data(pixels.as_slice()).unwrap();
-    Ok(())
-}
-
