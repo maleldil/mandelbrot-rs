@@ -1,21 +1,17 @@
 #![allow(dead_code)]
-#![allow(unused_imports)]
-#![allow(unused_variables)]
-#![allow(unused_mut)]
 mod test;
 
 #[cfg(test)]
 #[macro_use]
 extern crate approx;
 
-use png::{Encoder, StreamWriter};
+use png::{Encoder};
 use std::fs::File;
 use std::io::Error;
-use std::io::prelude::*;
 use std::io::BufWriter;
 
-const WIDTH: usize = 640;
-const HEIGHT: usize = 480;
+const WIDTH: usize = 1235;
+const HEIGHT: usize = 1120;
 
 // Actual constants
 const MIN_X: f64 = -2.0;
@@ -27,6 +23,8 @@ const Y_DIST: f64 = MAX_Y - MIN_Y;
 const MAX_ITERATIONS: u32 = 1000;
 const COLOR_DEPTH: u8 = 255;
 const INTENSITY_SCALE: f32 = COLOR_DEPTH as f32 / MAX_ITERATIONS as f32;
+
+
 
 fn main() {
     // Create a grid over the complex plane between (-2.00, 0.47) on x and (-1.12, 1.12) on y
@@ -44,45 +42,43 @@ fn main() {
         y := 0.0
         iteration := 0
         max_iteration := 1000
+        x2 := 0
+        y2 := 0
+        w := 0
 
-        while (x*x + y*y ≤ 2*2 AND iteration < max_iteration) do
-            xtemp := x*x - y*y + x0
-            y := 2*x*y + y0
-            x := xtemp
+        while (x2 + y2 ≤ 4 and iteration < max_iteration) do
+            y := 2 × x × y + y0
+            x := x2 - y2 + x0
+            x2 := x × x
+            y2 := y × y
             iteration := iteration + 1
-    
         color := palette[iteration]
         plot(Px, Py, color)
     */
     let mut pixels: [u8; WIDTH * HEIGHT] = [0u8; WIDTH * HEIGHT];
-    // pixels[[0,0]] = 8;
+
     for px in 0 .. WIDTH {
         for py in 0 .. HEIGHT {
             let (x0, y0) = scale(px, py);
             let (mut x, mut y) = (0.0, 0.0);
-            //println!("(x0, y0): ({}, {})", x0, y0);
+            let (mut x2, mut y2) = (0.0, 0.0);
             let mut iteration = 0;
-            // let (mut x2, mut y2, mut w) = (0.0, 0.0, 0.0);
-            while x * x + y * y <= 4.0 && iteration < MAX_ITERATIONS {
-                let xtemp = x*x - y*y + x0;
+
+            while x2 + y2 <= 4.0 && iteration < MAX_ITERATIONS {
                 y = 2.0 * x * y + y0;
-                x = xtemp;
+                x = x2 - y2 + x0;
+                x2 = x * x;
+                y2 = y * y;
                 iteration += 1;
             }
+            // if we actually scale these over 1000 instead we don't get good looking output
             let color: u8 = iteration.clamp(0, 255) as u8;
-            //println!("iteration: {}, color value: {}", iteration, color);
             pixels[(py * WIDTH) + px] = color;
         }
     }
 
     draw_image(pixels).unwrap();
     println!("File written to output.png");
-}
-
-fn scale_intensity(iterations: u32) -> u8 {
-    let color_32: u32 = (iterations as f32 * INTENSITY_SCALE).trunc() as u32;
-    let color_8: u8 = color_32.try_into().expect("Color went outside the bounds of u8");
-    color_8
 }
 
 fn scale(x: usize, y: usize) -> (f64, f64) {
@@ -98,8 +94,8 @@ fn scale(x: usize, y: usize) -> (f64, f64) {
 
 fn draw_image(pixels: [u8; WIDTH *HEIGHT]) -> Result<(), Error> {
     let file_buffer = File::create("output.png")?;
-    let mut w = BufWriter::with_capacity(WIDTH * HEIGHT, file_buffer);
-    let mut encoder = Encoder::new(w, WIDTH as u32, HEIGHT as u32);
+    let buffered_writer = BufWriter::with_capacity(WIDTH * HEIGHT, file_buffer);
+    let mut encoder = Encoder::new(buffered_writer, WIDTH as u32, HEIGHT as u32);
     encoder.set_color(png::ColorType::Grayscale);
     encoder.set_depth(png::BitDepth::Eight);
     let mut writer = encoder.write_header().unwrap();
