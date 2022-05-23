@@ -47,11 +47,10 @@ fn main() {
         w := 0
 
         while (x2 + y2 ≤ 4 and iteration < max_iteration) do
+            y := 2 × x × y + y0
             x := x2 - y2 + x0
-            y := w - x2 - y2 + y0
             x2 := x × x
             y2 := y × y
-            w := (x + y) × (x + y)
             iteration := iteration + 1
         color := palette[iteration]
         plot(Px, Py, color)
@@ -63,15 +62,13 @@ fn main() {
             let (x0, y0) = scale(px, py);
             let (mut x, mut y) = (0.0, 0.0);
             let (mut x2, mut y2) = (0.0, 0.0);
-            let mut w = 0.0;
             let mut iteration = 0;
-            // let (mut x2, mut y2, mut w) = (0.0, 0.0, 0.0);
-            while x * x + y * y <= 4.0 && iteration < MAX_ITERATIONS {
+
+            while x2 + y2 <= 4.0 && iteration < MAX_ITERATIONS {
+                y = 2.0 * x * y + y0;
                 x = x2 - y2 + x0;
-                y = w - x2 - y2 + y0;
                 x2 = x * x;
                 y2 = y * y;
-                w = (x + y) * (x + y);
                 iteration += 1;
             }
             // if we actually scale these over 1000 instead we don't get good looking output
